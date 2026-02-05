@@ -1,16 +1,7 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-from backend1 import (
-    text_to_emoji,
-    encode_image,
-    decode_image,
-    visualize_lsb_changes_overlay,
-    pixel_binary_changes,
-    pixel_change_stats,
-    plot_pixel_changes,
-    calculate_metrics
-)
+from backend1 import *
 
 st.set_page_config(page_title="Image Steganography", layout="wide")
 st.title("🖼️ Image Steganography using LSB with Emoji Mapping")
@@ -30,60 +21,37 @@ if choice == "Encode":
         emoji_msg = text_to_emoji(message)
         binary = encode_image("original.png", emoji_msg, "stego.png")
 
-        # Images
         col1, col2 = st.columns(2)
         col1.image("original.png", caption="Original Image", use_container_width=True)
         col2.image("stego.png", caption="Stego Image", use_container_width=True)
 
-        # Emoji + Binary
         st.subheader("🔑 Emoji Mapping")
         st.code(emoji_msg)
 
         st.subheader("📟 Binary Representation")
         st.text_area("", binary, height=120)
 
-        # Overlay
         st.subheader("🔴 LSB Changes Visualization")
         overlay = visualize_lsb_changes_overlay("original.png", "stego.png")
         st.image(overlay, caption="Red pixels indicate LSB changes", use_container_width=True)
 
-        # Pixel inspection
         st.subheader("🔎 Pixel Binary Inspection")
         img = np.array(Image.open("stego.png"))
         r = st.number_input("Row", 0, img.shape[0] - 1, 0)
         c = st.number_input("Column", 0, img.shape[1] - 1, 0)
 
         if st.button("Inspect Pixel"):
-            result = pixel_binary_changes("original.png", "stego.png", (r, c))
-            st.json(result)
+            st.json(pixel_binary_changes("original.png", "stego.png", (r, c)))
 
-        # Bar chart
         stats = pixel_change_stats("original.png", "stego.png")
-        fig = plot_pixel_changes(stats)
-        st.pyplot(fig)
+        st.pyplot(plot_pixel_changes(stats))
 
-        # ✅ PIXEL SUMMARY (MATCHES YOUR SCREENSHOT)
         st.markdown("### 📊 Pixel Change Summary")
-        st.markdown(
-            f"""
-            <div style="font-size:18px;">
-                <p>✅ <b>Total pixels changed:</b> {stats['Changed']}</p>
-                <p>✅ <b>Total pixels unchanged:</b> {stats['Unchanged']}</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.write(stats)
 
-        # Download button
         with open("stego.png", "rb") as f:
-            st.download_button(
-                "Download Encoded Image",
-                f,
-                "stego.png",
-                mime="image/png"
-            )
+            st.download_button("Download Encoded Image", f, "stego.png")
 
-        # Metrics
         mse, psnr, ssim_val = calculate_metrics("original.png", "stego.png")
         st.subheader("📈 Image Quality Metrics")
         st.write(f"MSE: {mse:.4f}")
@@ -98,11 +66,9 @@ else:
 
     if uploaded:
         Image.open(uploaded).save("uploaded.png")
-
         text, emoji, binary = decode_image("uploaded.png")
 
-        st.image("uploaded.png", caption="Uploaded Stego Image", use_container_width=True)
-
+        st.image("uploaded.png", caption="Stego Image", use_container_width=True)
         st.success("Message decoded successfully!")
 
         st.subheader("📝 Decoded Text")
