@@ -30,7 +30,6 @@ if choice == "Encode":
         emoji_msg = text_to_emoji(message)
         binary = encode_image("original.png", emoji_msg, "stego.png")
 
-        # ✅ Responsive images (no deprecated params)
         col1, col2 = st.columns(2)
         col1.image("original.png", caption="Original Image")
         col2.image("stego.png", caption="Stego Image")
@@ -39,7 +38,12 @@ if choice == "Encode":
         st.code(emoji_msg)
 
         st.subheader("📟 Binary Representation")
-        st.text_area("", binary, height=120)
+        st.text_area(
+            "Binary Data",
+            binary,
+            height=120,
+            label_visibility="collapsed"
+        )
 
         st.subheader("🔴 LSB Changes Visualization")
         overlay = visualize_lsb_changes_overlay("original.png", "stego.png")
@@ -94,4 +98,9 @@ else:
         st.code(emoji)
 
         st.subheader("📟 Extracted Binary")
-        st.text_area("", binary, height=120)
+        st.text_area(
+            "Extracted Binary",
+            binary,
+            height=120,
+            label_visibility="collapsed"
+        )
