@@ -1,7 +1,16 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-from backend1 import *
+from backend1 import (
+    text_to_emoji,
+    encode_image,
+    decode_image,
+    visualize_lsb_changes_overlay,
+    pixel_binary_changes,
+    pixel_change_stats,
+    plot_pixel_changes,
+    calculate_metrics
+)
 
 st.set_page_config(page_title="Image Steganography", layout="wide")
 st.title("🖼️ Image Steganography using LSB with Emoji Mapping")
@@ -21,9 +30,10 @@ if choice == "Encode":
         emoji_msg = text_to_emoji(message)
         binary = encode_image("original.png", emoji_msg, "stego.png")
 
+        # ✅ Responsive images (no deprecated params)
         col1, col2 = st.columns(2)
-        col1.image("original.png", caption="Original Image", use_container_width=True)
-        col2.image("stego.png", caption="Stego Image", use_container_width=True)
+        col1.image("original.png", caption="Original Image")
+        col2.image("stego.png", caption="Stego Image")
 
         st.subheader("🔑 Emoji Mapping")
         st.code(emoji_msg)
@@ -33,7 +43,7 @@ if choice == "Encode":
 
         st.subheader("🔴 LSB Changes Visualization")
         overlay = visualize_lsb_changes_overlay("original.png", "stego.png")
-        st.image(overlay, caption="Red pixels indicate LSB changes", use_container_width=True)
+        st.image(overlay, caption="Red pixels indicate LSB changes")
 
         st.subheader("🔎 Pixel Binary Inspection")
         img = np.array(Image.open("stego.png"))
@@ -50,7 +60,12 @@ if choice == "Encode":
         st.write(stats)
 
         with open("stego.png", "rb") as f:
-            st.download_button("Download Encoded Image", f, "stego.png")
+            st.download_button(
+                "Download Encoded Image",
+                f,
+                "stego.png",
+                mime="image/png"
+            )
 
         mse, psnr, ssim_val = calculate_metrics("original.png", "stego.png")
         st.subheader("📈 Image Quality Metrics")
@@ -66,9 +81,10 @@ else:
 
     if uploaded:
         Image.open(uploaded).save("uploaded.png")
+
         text, emoji, binary = decode_image("uploaded.png")
 
-        st.image("uploaded.png", caption="Stego Image", use_container_width=True)
+        st.image("uploaded.png", caption="Stego Image")
         st.success("Message decoded successfully!")
 
         st.subheader("📝 Decoded Text")
